@@ -67,9 +67,3 @@ def data():
         return jsonify({
             'error': 'No se pudo obtener el clima. Verifica la clave API o la ciudad.'
         })
-
-
-
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
