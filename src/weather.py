@@ -1,27 +1,20 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 import requests
 
 
 API_KEY = 'e977d82fb6541dc8c4fbf8ada061c5ee'
-CITY = "London"
 
-coordinates = [
-    {"lat": 40.7128, "lon": -74.0060},  # Nueva York
-    {"lat": 34.0522, "lon": -118.2437}, # Los Ángeles
-    {"lat": 51.5074, "lon": -0.1278},   # Londres
-    {"lat": -33.8688, "lon": 151.2093},  # Sídney
-    {"lat": 41.0000, "lon": -3.0000}  # Madrid
-]
-
-weather_blueprint = Blueprint('weather', __name__)
-data_blueprint = Blueprint('data', __name__)
+coord_weather_blueprint = Blueprint('coord-weather', __name__)
+city_weather_blueprint = Blueprint('city-weather', __name__)
 
 
 
-@weather_blueprint.route('/weather', methods=['GET'])
+
+@coord_weather_blueprint.route('/coord-weather', methods=['POST'])
 def get_weather():
     weather_data = []
-    
+    coordinates = request.json.get('coord')
+
     for coord in coordinates:
         url = f"http://api.openweathermap.org/data/2.5/weather?lat={coord['lat']}&lon={coord['lon']}&appid={API_KEY}&units=metric"
         
@@ -43,23 +36,32 @@ def get_weather():
     
     return jsonify(weather_data)
 
-@data_blueprint.route('/data', methods=['GET'])
+
+@city_weather_blueprint.route('/city-weather', methods=['POST'])
 def data():
-    url = f"http://api.openweathermap.org/data/2.5/weather?q={CITY}&appid={API_KEY}&units=metric"
+    city = request.json.get('city')
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
     
     response = requests.get(url)
     
     if response.status_code == 200:
         data = response.json()
+        print(data)
         
-        weather_description = data['weather'][0]['description']
-        temperature = data['main']['temp']
+
         
         return jsonify({
-            'message': 'hello world',
-            'city': CITY,
-            'temperature': f"{temperature}°C",
-            'weather': weather_description
+            'coord': data['coord'],
+            'city': city,
+            'temperature': f"{ data['main']['temp']}°C",
+            "weather_description": data['weather'][0]['description'],
+            "temp_min": data['main']['temp_min'],
+            "temp_max": data['main']['temp_max'],
+            "pressure": data['main']['pressure'],
+            "humidity": data['main']['humidity'],
+            'wind': data['wind'],
+            "sunrise": data['sys']['sunrise'],
+            "sunset": data['sys']['sunset'],
         })
     else:
         return jsonify({
