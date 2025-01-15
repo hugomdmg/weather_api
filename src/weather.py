@@ -3,7 +3,7 @@ import requests
 
 
 API_KEY = 'e977d82fb6541dc8c4fbf8ada061c5ee'
-
+CITY = "London"
 
 coordinates = [
     {"lat": 40.7128, "lon": -74.0060},  # Nueva York
@@ -14,6 +14,9 @@ coordinates = [
 ]
 
 weather_blueprint = Blueprint('weather', __name__)
+data_blueprint = Blueprint('data', __name__)
+
+
 
 @weather_blueprint.route('/weather', methods=['GET'])
 def get_weather():
@@ -39,6 +42,30 @@ def get_weather():
             })
     
     return jsonify(weather_data)
+
+@data_blueprint.route('/data', methods=['GET'])
+def data():
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={CITY}&appid={API_KEY}&units=metric"
+    
+    response = requests.get(url)
+    
+    if response.status_code == 200:
+        data = response.json()
+        
+        weather_description = data['weather'][0]['description']
+        temperature = data['main']['temp']
+        
+        return jsonify({
+            'message': 'hello world',
+            'city': CITY,
+            'temperature': f"{temperature}°C",
+            'weather': weather_description
+        })
+    else:
+        return jsonify({
+            'error': 'No se pudo obtener el clima. Verifica la clave API o la ciudad.'
+        })
+
 
 
 
